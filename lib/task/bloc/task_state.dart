@@ -9,31 +9,30 @@ final class TaskState extends Equatable {
     this.task,
     this.taskList = const [],
     this.message = '',
+    this.tasks = false,
   });
 
   final TaskStatus status;
-  final  Map<String, dynamic>? task; 
+  final Map<String, dynamic>? task;
   final List<Task> taskList;
   final String? message;
+  final bool tasks;
 
-  static const TaskState initial = TaskState(
-    status: TaskStatus.initial,
-    task:{},
-    taskList: [],
-    message: '',
-  );
+  static const TaskState initial = TaskState();
 
   TaskState copyWith({
     TaskStatus? status,
     List<Task>? taskList,
     String? message,
-     Map<String, dynamic>? task,
+    Map<String, dynamic>? task,
+    bool? tasks, // Made nullable
   }) {
     return TaskState(
       status: status ?? this.status,
       task: task ?? this.task,
       taskList: taskList ?? this.taskList,
       message: message ?? this.message,
+      tasks: tasks ?? this.tasks, // Fixed to use this.tasks
     );
   }
 
@@ -43,5 +42,6 @@ final class TaskState extends Equatable {
         task,
         taskList,
         message,
+        tasks,
       ];
 }

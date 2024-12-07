@@ -59,6 +59,7 @@ class SigninBloc extends Bloc<SigninEvent, SigninState> {
       emit(state.copyWith(
         status: SigninStatus.loaded,
         user: login,
+        
       ));
     } catch (error) {
       logger.e("Error fetching JSON data: $error");

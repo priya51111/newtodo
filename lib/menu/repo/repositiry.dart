@@ -3,67 +3,14 @@ import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:newtodo/menu/model.dart';
- 
-
 
 class MenuRepository {
   final String createMenuUrl =
       'https://app-project-9.onrender.com/api/menu/menu';
-  final GetStorage box = GetStorage(); 
-  final Logger logger = Logger();
   final String fetchMenusUrl =
       'https://app-project-9.onrender.com/api/menu/getbyid';
-  
-  Future<String> createMenu(String menuname, String date) async {
-    try {
-      
-      final response = await http.post(
-        Uri.parse(createMenuUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({
-          'menuname': menuname,
-          'userId': userId,
-          'date': date,
-        }),
-      );
-
-      
-      logger.i("API Response: ${response.statusCode} - ${response.body}");
-
-      
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = jsonDecode(response.body);
-        final menuId = data['data']['menu']['_id'];
-        final date = data['data']['menu']['date'];
-
-       
-        box.write('date', date);
-        logger.i('Date Saved: $date');
-
-        
-        box.write('menuId', menuId);
-        logger.i("Menu ID saved: $menuId");
-        return menuId; 
-      } else {
-        throw Exception("Error: ${response.body}");
-      }
-    } catch (e) {
-      logger.e("Error creating menu: $e");
-      throw Exception('Failed to create menu');
-    }
-  }
-
- 
-  String getSavedMenuId() {
-    return box.read('menuId') ?? '';   }
-
-  
-  String getdate() {
-    return box.read('date') ?? ''; 
-  }
+  final GetStorage box = GetStorage();
+  final Logger logger = Logger();
 
   final List<String> defaultMenus = [
     "Wishlist",
@@ -72,14 +19,55 @@ class MenuRepository {
     "Personal",
     "Work"
   ];
-  
-  Future<List<Menus>> fetchMenus(
-      {required String userId, required String date }) async {
+
+  Future<Map<String, dynamic>> createMenu(String menuname, String date) async {
     try {
-      
-    
-   
-      
+      final userId = box.read('userId');
+      final token = box.read('token');
+
+      final response = await http.post(
+        Uri.parse(createMenuUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'menuname': menuname,
+          'userId':    userId,
+          'date': date,
+        }),
+      );
+
+      logger.i("API Response: ${response.statusCode} - ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        final menuId = data['data']['menu']['_id'];
+        final menuDate = data['data']['menu']['date'];
+
+        logger.i("Menu created with ID: $menuId on $menuDate");
+        box.write('menuId', menuId);
+        box.write('menuDate', menuDate);
+
+        logger.i("Menu ID and Date saved to GetStorage");
+
+        return data;
+      } else {
+        logger.e("API Error: ${response.body}");
+        throw Exception("Error creating menu: ${response.body}");
+      }
+    } catch (e) {
+      logger.e("Error creating menu: $e");
+      throw Exception('Failed to create menu');
+    }
+  }
+
+  Future<List<Menu>> fetchMenus({required String userId, required String date}) async {
+    try {
+      final token = box.read('token');
+
+      logger.i("Using saved date for fetchMenus: $date");
+
       final response = await http.get(
         Uri.parse('$fetchMenusUrl/$userId/$date'),
         headers: {
@@ -93,13 +81,12 @@ class MenuRepository {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'success' && data['data']['menu'] != null) {
-          List<Menus> menus = (data['data']['menu'] as List)
-              .map((menu) => Menus.fromJson(menu))
+          List<Menu> menuList = (data['data']['menu'] as List)
+              .map((menu) => Menu.fromJson(menu))
               .toList();
 
-         
-          await _createDefaultMenusIfNeeded(menus, userId, date);
-          return menus;
+          await _createDefaultMenusIfNeeded(menuList, userId, date);
+          return menuList;
         } else {
           throw Exception('Menu not found in response');
         }
@@ -113,78 +100,15 @@ class MenuRepository {
   }
 
   Future<void> _createDefaultMenusIfNeeded(
-      List<Menus> existingMenus, String userId, String date) async {
+      List<Menu> existingMenus, String userId, String date) async {
     final existingMenuNames =
         existingMenus.map((menu) => menu.menuname).toList();
     logger.i('Existing menu names: $existingMenuNames');
     for (var defaultMenu in defaultMenus) {
       if (!existingMenuNames.contains(defaultMenu)) {
-       
         await createMenu(defaultMenu, date);
         logger.i('Default menu "$defaultMenu" created');
       }
-    }
-  }
-
-  Future<void> deletemenu(String menuId) async {
-
-    final url =
-        Uri.parse('https://app-project-9.onrender.com/api/menu/menu/$menuId');
-
-    try {
-      
-      final response = await http.delete(
-        url,
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-     
-      logger.i('API Response Status Code: ${response.statusCode}');
-      logger.i('API Response Body: ${response.body}');
-
-      
-      if (response.statusCode != 200) {
-        throw Exception('Failed to delete menu');
-      }
-
-      logger.i('Menu with ID $menuId deleted successfully');
-    } catch (e) {
-      logger.e('Error deleting menu: $e');
-      throw Exception('Failed to delete menu');
-    }
-  }
-
-  Future<bool> updateMenu({
-    required String menuId,
-    required String menuname,
-  }) async {
-   
-    final url = Uri.parse(
-      'https://app-project-9.onrender.com/api/menu/updatemenu/$menuId',
-    );
-
-    try {
-      final response = await http.patch(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({
-          'menuname': menuname,
-        }),
-      );
-
-      
-      logger.i('API Response Status Code: ${response.statusCode}');
-      logger.i('API Response Body: ${response.body}');
-
-      return response.statusCode == 200;
-    } catch (e) {
-      logger.e('Error updating menu: $e');
-      return false;
     }
   }
 }
