@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
-import 'package:newtodo/signin/model/signin_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SigninRepository {
@@ -29,10 +28,9 @@ class SigninRepository {
         final responseBody = json.decode(response.body);
         final userMap = responseBody['data']['user'];
         final userId = userMap['_id'];
-        final user = User.fromJson(userMap);
 
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('userId', userId); // Save _id as userId
+        await prefs.setString('userId', userId); 
         await prefs.setString('email', email);
         logger.i("User ID: $userId");
         return responseBody;
@@ -92,5 +90,12 @@ class SigninRepository {
     return prefs.getString('token');
   }
 
- 
+ Future<void> logOut() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.remove('userId');
+    await prefs.remove('token');
+
+    logger.i("User logged out successfully. UserId and Token removed.");
+  }
 }
