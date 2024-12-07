@@ -35,7 +35,7 @@ class LoginPage extends StatelessWidget {
               backgroundColor: Colors.green,
               textColor: Colors.white,
             );
-            GoRouter.of(context).go('/logout');
+            GoRouter.of(context).go('/home');
           }
         },
         child: Stack(

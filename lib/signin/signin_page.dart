@@ -35,7 +35,7 @@ class SigninPage extends StatelessWidget {
               backgroundColor: Colors.green,
               textColor: Colors.white,
             );
-            GoRouter.of(context).go('/logout');
+            GoRouter.of(context).go('/home');
           } else if (state.status == SigninStatus.loading) {
             Container(
               color: Colors.black.withOpacity(0.5),

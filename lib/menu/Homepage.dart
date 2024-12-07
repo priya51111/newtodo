@@ -10,7 +10,7 @@ import 'package:newtodo/menu/bloc/menu_bloc.dart';
 import 'package:newtodo/menu/bloc/menu_event.dart';
 import 'package:newtodo/menu/bloc/menu_state.dart';
 import 'package:newtodo/task/bloc/task_bloc.dart';
-import 'package:newtodo/task/bloc/task_state.dart';     
+import 'package:newtodo/task/bloc/task_state.dart';    
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -113,7 +113,7 @@ class _HomepageState extends State<Homepage> {
         ),
         actions: [
           IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
-            _buildPopupMenu()
+            _buildPopupMenu(context)
         ],
       ),
       body: BlocListener<TaskBloc, TaskState>(
@@ -214,95 +214,95 @@ class _HomepageState extends State<Homepage> {
     );
   }
 }
-    Widget _buildPopupMenu() {
-    return PopupMenuButton<Menu>(
-      elevation: 0,
-      color: const Color.fromARGB(135, 33, 149, 243),
-      constraints: const BoxConstraints.tightFor(height: 340, width: 200),
-      icon: const Icon(
-        Icons.more_vert,
-        color: Colors.white,
+   Widget _buildPopupMenu(BuildContext context) {
+  return PopupMenuButton<Menu>(
+    elevation: 0,
+    color: const Color.fromARGB(135, 33, 149, 243),
+    constraints: const BoxConstraints.tightFor(height: 340, width: 200),
+    icon: const Icon(
+      Icons.more_vert,
+      color: Colors.white,
+    ),
+    onSelected: (Menu item) {
+      switch (item) {
+        case Menu.TaskLists:
+          // Handle TaskLists selection
+          break;
+        case Menu.AddInBatchMode:
+          // Handle AddInBatchMode selection
+          break;
+        case Menu.RemoveAds:
+          // Handle RemoveAds selection
+          break;
+        case Menu.MoreApps:
+          // Handle MoreApps selection
+          break;
+        case Menu.SendFeedback:
+          // Handle SendFeedback selection
+          break;
+        case Menu.FollowUs:
+          // Handle FollowUs selection
+          break;
+        case Menu.Invite:
+          // Handle Invite selection
+          break;
+        case Menu.Settings:
+          // Handle Settings selection
+          break;
+        case Menu.MenuPage:
+          // Handle MenuPage selection
+          break;
+        case Menu.Logout:
+          // Navigate to the Logout page when 'Logout' is selected
+          GoRouter.of(context).go('/logout');
+          break;
+      }
+    },
+    itemBuilder: (BuildContext context) => <PopupMenuEntry<Menu>>[
+      const PopupMenuItem<Menu>(
+        value: Menu.TaskLists,
+        child: Text('Task Lists'),
       ),
-      onSelected: (Menu item) {
-        switch (item) {
-          case Menu.TaskLists:
-          
-            break;
-          case Menu.AddInBatchMode:
-          
-          
-            break;
-          case Menu.RemoveAds:
-            break;
-          case Menu.MoreApps:
-          
-          case Menu.SendFeedback:
-         
-          case Menu.FollowUs:
-        
-          case Menu.Invite:
-        
-          case Menu.Settings:
-           
-          
-            break;
-             case Menu.MenuPage:
-           
+      const PopupMenuItem<Menu>(
+        value: Menu.AddInBatchMode,
+        child: Text('Add in Batch Mode'),
+      ),
+      const PopupMenuItem<Menu>(
+        value: Menu.RemoveAds,
+        child: Text('Remove Ads'),
+      ),
+      const PopupMenuItem<Menu>(
+        value: Menu.MoreApps,
+        child: Text('More Apps'),
+      ),
+      const PopupMenuItem<Menu>(
+        value: Menu.SendFeedback,
+        child: Text('Send Feedback'),
+      ),
+      const PopupMenuItem<Menu>(
+        value: Menu.FollowUs,
+        child: Text('Follow Us'),
+      ),
+      const PopupMenuItem<Menu>(
+        value: Menu.Invite,
+        child: Text('Invite'),
+      ),
+      const PopupMenuItem<Menu>(
+        value: Menu.Settings,
+        child: Text('Settings'),
+      ),
+      const PopupMenuItem<Menu>(
+        value: Menu.MenuPage,
+        child: Text('Menu Page'),
+      ),
+      const PopupMenuItem<Menu>(
+        value: Menu.Logout,
+        child: Text('Logout'),
+      ),
+    ],
+  );
+}
 
-          
-          case Menu.Logout:
-            
-        }
-      },
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<Menu>>[
-        const PopupMenuItem<Menu>(
-          value: Menu.TaskLists,
-          child: Text('Task Lists',
-              style: TextStyle(color: Colors.white, fontSize: 17)),
-        ),
-        const PopupMenuItem<Menu>(
-          value: Menu.AddInBatchMode,
-          child: Text('Add in Batch Mode',
-              style: TextStyle(color: Colors.white, fontSize: 17)),
-        ),
-        const PopupMenuItem<Menu>(
-          value: Menu.RemoveAds,
-          child: Text('Remove Ads',
-              style: TextStyle(color: Colors.white, fontSize: 17)),
-        ),
-        const PopupMenuItem<Menu>(
-          value: Menu.MoreApps,
-          child: Text('More Apps',
-              style: TextStyle(color: Colors.white, fontSize: 17)),
-        ),
-        const PopupMenuItem<Menu>(
-          value: Menu.SendFeedback,
-          child: Text('Send Feedback',
-              style: TextStyle(color: Colors.white, fontSize: 17)),
-        ),
-        const PopupMenuItem<Menu>(
-          value: Menu.FollowUs,
-          child: Text('Follow Us',
-              style: TextStyle(color: Colors.white, fontSize: 17)),
-        ),
-        const PopupMenuItem<Menu>(
-          value: Menu.Settings,
-          child: Text('Settings',
-              style: TextStyle(color: Colors.white, fontSize: 17)),
-        ),
-         const PopupMenuItem<Menu>(
-          value: Menu.MenuPage,
-          child: Text('MenuPage',
-              style: TextStyle(color: Colors.white, fontSize: 17)),
-        ),
-        const PopupMenuItem<Menu>(
-          value: Menu.Logout,
-          child: Text('Logout',
-              style: TextStyle(color: Colors.white, fontSize: 17)),
-        ),
-      ],
-    );
-  }
 void _showNewMenuDialog(BuildContext context) {
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
   DateTime? selectedDate;
