@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:newtodo/bloc_observer.dart';
+
 import 'package:newtodo/menu/Homepage.dart';
 
 import 'package:newtodo/menu/bloc/menu_bloc.dart';
 import 'package:newtodo/menu/repo/repositiry.dart';
+
 import 'package:newtodo/signin/bloc/signin_bloc.dart';
 import 'package:newtodo/signin/login_page.dart';
+import 'package:newtodo/signin/logout_page.dart';
 import 'package:newtodo/signin/repository/signin_repository.dart';
 import 'package:newtodo/signin/signin_page.dart';
 import 'package:go_router/go_router.dart';
@@ -27,15 +30,24 @@ class MyApp extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/signin',
+
         builder: (context, state) => SigninPage(),
       ),
       GoRoute(
         path: '/home',
         builder: (context, state) => Homepage(),
+
+      
+
       ),
+      
       GoRoute(
         path: '/login',
-        builder: (context, state) => LoginPage(),
+        builder: (context, state) => const LoginPage(),
+      ),
+      GoRoute(
+        path: '/logout',
+        builder: (context, state) => LogoutPage(),
       ),
        GoRoute(
         path: '/taskpage',
@@ -62,14 +74,19 @@ class MyApp extends StatelessWidget {
  
  
 
+
       ],
       child: MaterialApp.router(
         routerConfig: _router,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-        ),
+       
+      theme: ThemeData(
+        
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
+
       ),
+      )
     );
+    
   }
 }

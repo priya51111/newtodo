@@ -12,6 +12,7 @@ class SigninBloc extends Bloc<SigninEvent, SigninState> {
         super(SigninState.initial) {
     on<CreateUser>(_onCreateUser);
     on<LoginUser>(_onLoginUser);
+     on<LogoutUser>(_onLogoutUser);
   }
   final SigninRepository _signinRepository;
   final Logger logger = Logger();
@@ -70,6 +71,26 @@ class SigninBloc extends Bloc<SigninEvent, SigninState> {
           message: error.toString(),
         ),
       );
+    }
+  }
+    Future<void> _onLogoutUser(
+    LogoutUser event,
+    Emitter<SigninState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(status: SigninStatus.loading));
+      await _signinRepository.logOut(); // Perform logout logic
+      logger.i("User logged out successfully");
+      emit(state.copyWith(
+        status: SigninStatus.initial,
+        user: null,
+      ));
+    } catch (error) {
+      logger.e("Error during logout: $error");
+      emit(state.copyWith(
+        status: SigninStatus.error,
+        message: error.toString(),
+      ));
     }
   }
 }

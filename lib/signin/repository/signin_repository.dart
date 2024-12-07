@@ -2,7 +2,11 @@ import 'dart:convert';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
+
 import 'package:newtodo/signin/model/signin_model.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class SigninRepository {
   final String apiUrl = 'https://app-project-9.onrender.com';
@@ -30,9 +34,11 @@ class SigninRepository {
         final responseBody = json.decode(response.body);
         final userMap = responseBody['data']['user'];
         final userId = userMap['_id'];
+
         box.write('userId', userId);
         box.write('email', email);
         logger.i("User ID saved: $userId");
+
         return responseBody;
       } else if (response.statusCode == 409) {
         throw Exception("User with this email already exists. Please sign in.");
@@ -79,4 +85,6 @@ class SigninRepository {
       throw Exception('Failed to sign in');
     }
   }
+
+
 }
