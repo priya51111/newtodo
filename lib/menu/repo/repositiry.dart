@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
@@ -34,7 +33,7 @@ class MenuRepository {
         },
         body: jsonEncode({
           'menuname': menuname,
-          'userId':    userId,
+          'userId': userId,
           'date': date,
         }),
       );
@@ -63,11 +62,12 @@ class MenuRepository {
     }
   }
 
-  Future<List<Menu>> fetchMenus({required String userId, required String date}) async {
+  Future<List<Menu>> fetchMenus(
+      {required String userId, required String date}) async {
     try {
       final token = box.read('token');
 
-      logger.i("Using saved date for fetchMenus: $date");
+      final date = box.read('menuDate');
 
       final response = await http.get(
         Uri.parse('$fetchMenusUrl/$userId/$date'),
@@ -113,4 +113,3 @@ class MenuRepository {
     }
   }
 }
-

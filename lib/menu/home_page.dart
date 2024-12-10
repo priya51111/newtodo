@@ -10,7 +10,7 @@ import 'package:newtodo/menu/bloc/menu_bloc.dart';
 import 'package:newtodo/menu/bloc/menu_event.dart';
 import 'package:newtodo/menu/bloc/menu_state.dart';
 import 'package:newtodo/task/bloc/task_bloc.dart';
-import 'package:newtodo/task/bloc/task_state.dart';    
+import 'package:newtodo/task/bloc/task_state.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -38,8 +38,6 @@ class _HomepageState extends State<Homepage> {
   List<String> dropdownItems = ['New List', 'Finished '];
   @override
   Widget build(BuildContext context) {
- 
-
     return Scaffold(
       backgroundColor: const Color.fromARGB(134, 4, 83, 147),
       appBar: AppBar(
@@ -52,58 +50,85 @@ class _HomepageState extends State<Homepage> {
               color: Colors.white,
             ),
             const SizedBox(width: 8),
-            Padding(
-              padding: const EdgeInsets.only(top: 15),
-              child: SizedBox(
-                width: 160.0,
-                height: 60.0,
-                child: DropdownButton<String>(
-                  value: dropdownValue,
-                  hint: const Text('Select'),
-                  items: dropdownItems.map((String item) {
-                    return DropdownMenuItem<String>(
-                      value: item,
-                      child: Text(
-                        item,
-                        style: const TextStyle(color: Colors.white),
+            BlocBuilder<MenuBloc, MenuState>(
+              builder: (context, state) {
+                if (state.status == MenuStatus.loading) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: Colors.white),
+                  );
+                }
+
+                if (state.status == MenuStatus.error) {
+                  return const Center(
+                    child: Text(
+                      'Error loading menus',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  );
+                }
+
+                final menuItems = [
+                  'New List',
+                  ...state.menuList.map((menu) => menu.menuname).toList(),
+                  'Finished',
+                ];
+
+                dropdownValue ??= menuItems.first;
+
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 15),
+                      child: SizedBox(
+                        width: 160.0,
+                        height: 60.0,
+                        child: DropdownButton<String>(
+                          value: dropdownValue,
+                          hint: const Text('Select'),
+                          items: menuItems.map((String item) {
+                            return DropdownMenuItem<String>(
+                              value: item,
+                              child: Text(
+                                item,
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (String? value) {
+                            
+                            if (value == 'New List') {
+                              _showNewMenuDialog(context);
+                            }
+                          },
+                          dropdownColor:
+                              const Color.fromARGB(135, 33, 149, 243),
+                          iconEnabledColor: Colors.white,
+                          isExpanded: true,
+                          underline: const SizedBox(),
+                        ),
                       ),
                     );
-                  }).toList(),
-                  onChanged: (String? value) {
-                    if (value == 'New List') {
-                      _showNewMenuDialog(context);
-                    }
                   },
-                  dropdownColor: const Color.fromARGB(135, 33, 149, 243),
-                  iconEnabledColor: Colors.white,
-                  isExpanded: true,
-                  underline: const SizedBox(),
-                ),
-              ),
+                );
+              },
             ),
             BlocListener<MenuBloc, MenuState>(
               listener: (context, state) {
                 if (state.status == MenuStatus.loaded) {
-                 Fluttertoast.showToast(
-              msg: 'Menu created successfully',
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.BOTTOM,
-              backgroundColor: Colors.green,
-              textColor: Colors.white,
-            );
+                  Fluttertoast.showToast(
+                    msg: 'Menu created successfully',
+                    toastLength: Toast.LENGTH_SHORT,
+                    gravity: ToastGravity.BOTTOM,
+                    backgroundColor: Colors.green,
+                    textColor: Colors.white,
+                  );
                 } else if (state.status == MenuStatus.error) {
-                 Fluttertoast.showToast(
-              msg: 'Error in  created Menu',
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.BOTTOM,
-              backgroundColor: Colors.green,
-              textColor: Colors.white,
-            );
-                } else if (state.status == MenuStatus.initial) {
-                  Container(
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                    ),
+                  Fluttertoast.showToast(
+                    msg: 'Error creating menu',
+                    toastLength: Toast.LENGTH_SHORT,
+                    gravity: ToastGravity.BOTTOM,
+                    backgroundColor: Colors.red,
+                    textColor: Colors.white,
                   );
                 }
               },
@@ -113,13 +138,13 @@ class _HomepageState extends State<Homepage> {
         ),
         actions: [
           IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
-            _buildPopupMenu(context)
+          _buildPopupMenu(context),
         ],
       ),
       body: BlocListener<TaskBloc, TaskState>(
         listener: (context, state) {
           if (state.status == TaskStatus.success) {
-          Fluttertoast.showToast(
+            Fluttertoast.showToast(
               msg: 'Task created successfully',
               toastLength: Toast.LENGTH_SHORT,
               gravity: ToastGravity.BOTTOM,
@@ -127,7 +152,7 @@ class _HomepageState extends State<Homepage> {
               textColor: Colors.white,
             );
           } else if (state.status == TaskStatus.error) {
-          Fluttertoast.showToast(
+            Fluttertoast.showToast(
               msg: 'Error in created  successfully',
               toastLength: Toast.LENGTH_SHORT,
               gravity: ToastGravity.BOTTOM,
@@ -184,7 +209,7 @@ class _HomepageState extends State<Homepage> {
                                 Padding(
                                   padding: const EdgeInsets.only(right: 85),
                                   child: Text(
-                                    task.time,
+                                    "${task.time}",
                                     style: const TextStyle(color: Colors.white),
                                   ),
                                 ),
@@ -207,14 +232,15 @@ class _HomepageState extends State<Homepage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-           GoRouter.of(context).go('/taskpage');
+          GoRouter.of(context).go('/taskpage');
         },
         child: const Icon(Icons.add),
       ),
     );
   }
 }
-   Widget _buildPopupMenu(BuildContext context) {
+
+Widget _buildPopupMenu(BuildContext context) {
   return PopupMenuButton<Menu>(
     elevation: 0,
     color: const Color.fromARGB(135, 33, 149, 243),
@@ -226,34 +252,25 @@ class _HomepageState extends State<Homepage> {
     onSelected: (Menu item) {
       switch (item) {
         case Menu.TaskLists:
-          // Handle TaskLists selection
           break;
         case Menu.AddInBatchMode:
-          // Handle AddInBatchMode selection
           break;
         case Menu.RemoveAds:
-          // Handle RemoveAds selection
           break;
         case Menu.MoreApps:
-          // Handle MoreApps selection
           break;
         case Menu.SendFeedback:
-          // Handle SendFeedback selection
           break;
         case Menu.FollowUs:
-          // Handle FollowUs selection
           break;
         case Menu.Invite:
-          // Handle Invite selection
           break;
         case Menu.Settings:
-          // Handle Settings selection
+          GoRouter.of(context).go('/setting');
           break;
         case Menu.MenuPage:
-          // Handle MenuPage selection
           break;
         case Menu.Logout:
-          // Navigate to the Logout page when 'Logout' is selected
           GoRouter.of(context).go('/logout');
           break;
       }

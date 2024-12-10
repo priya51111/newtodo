@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
+import 'package:newtodo/menu/bloc/menu_state.dart';
 import '../../task/bloc/task_bloc.dart';
 import '../../task/bloc/task_event.dart';
 import '../../task/bloc/task_state.dart';
+import '../menu/bloc/menu_bloc.dart';
+import '../menu/bloc/menu_event.dart';
 
 class TaskPage extends StatefulWidget {
- 
-
-  const TaskPage({Key? key,}) : super(key: key);
+  const TaskPage({Key? key}) : super(key: key);
 
   @override
   State<TaskPage> createState() => _CreateTaskPageState();
@@ -20,7 +23,7 @@ class TaskPage extends StatefulWidget {
 class _CreateTaskPageState extends State<TaskPage> {
   final Logger log = Logger();
   final _formKey = GlobalKey<FormBuilderState>();
-
+  String? dropdownValue;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,7 +31,7 @@ class _CreateTaskPageState extends State<TaskPage> {
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(135, 33, 149, 243),
         title: Text(
-         'New Task',
+          'New Task',
           style: const TextStyle(color: Colors.white),
         ),
       ),
@@ -39,13 +42,16 @@ class _CreateTaskPageState extends State<TaskPage> {
               child: CircularProgressIndicator(color: Colors.white),
             );
           } else if (state.status == TaskStatus.success) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                  content: Text(
-                     
-                       'Task Created Successfully')),
+            Fluttertoast.showToast(
+              msg: "Task Created Successfully!",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              backgroundColor: Colors.green,
+              textColor: Colors.white,
             );
-            
+            Future.delayed(const Duration(seconds: 1), () {
+              context.go('/home'); // Replace '/home' with your home page route
+            });
           } else if (state.status == TaskStatus.error) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Task Creation Failed: ${state.message}')),
@@ -136,6 +142,98 @@ class _CreateTaskPageState extends State<TaskPage> {
                   ),
                   validator: FormBuilderValidators.required(),
                 ),
+                const SizedBox(
+                  height: 9,
+                ),
+                const Text(
+                  "Add to List",
+                  style: TextStyle(
+                    color: Color.fromARGB(135, 33, 149, 243),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(
+                  height: 16,
+                ),
+                Row(
+                  children: [
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: BlocBuilder<MenuBloc, MenuState>(
+                        builder: (context, state) {
+                          if (state.status == MenuStatus.loading) {
+                            return const Center(
+                              child: CircularProgressIndicator(
+                                  color: Colors.white),
+                            );
+                          }
+
+                          if (state.status == MenuStatus.error) {
+                            return const Center(
+                              child: Text(
+                                'Error loading menus',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            );
+                          }
+
+                          final menuItems = [
+                            'New List',
+                            ...state.menuList
+                                .map((menu) => menu.menuname)
+                                .toList(),
+                            'Finished',
+                          ];
+
+                          dropdownValue ??= menuItems.first;
+
+                          return LayoutBuilder(
+                            builder: (context, constraints) {
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 15),
+                                child: SizedBox(
+                                  width: 160.0,
+                                  height: 60.0,
+                                  child: DropdownButton<String>(
+                                    value: dropdownValue,
+                                    hint: const Text('Select'),
+                                    items: menuItems.map((String item) {
+                                      return DropdownMenuItem<String>(
+                                        value: item,
+                                        child: Text(
+                                          item,
+                                          style: const TextStyle(
+                                              color: Colors.white),
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (String? value) {
+                                      if (value == 'New List') {
+                                        _showNewMenuDialog(context);
+                                      }
+                                    },
+                                    dropdownColor:
+                                        const Color.fromARGB(135, 33, 149, 243),
+                                    iconEnabledColor: Colors.white,
+                                    isExpanded: true,
+                                    underline: const SizedBox(),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                    IconButton(
+                        onPressed: () {
+                          _showNewMenuDialog(context);
+                        },
+                        icon: const Icon(Icons.format_list_bulleted_add,
+                            color: Colors.white),   )
+                  ],
+                ),
                 const SizedBox(height: 24),
                 Center(
                   child: FloatingActionButton(
@@ -144,11 +242,20 @@ class _CreateTaskPageState extends State<TaskPage> {
                     onPressed: () {
                       if (_formKey.currentState?.saveAndValidate() ?? false) {
                         final formData = _formKey.currentState!.value;
-                        context.read<TaskBloc>().add(TaskCreated(
-                              task: formData['task'],
-                              date: formData['date'].toString(),
-                              time: formData['time'].toString(),
-                            ));
+                        final DateTime parsedDate = formData['date'];
+                        final DateTime parsedTime = formData['time'];
+                        final formattedDate =
+                            DateFormat('yyyy-MM-dd').format(parsedDate);
+                        final formattedTime =
+                            DateFormat('HH:mm:ss').format(parsedTime);
+
+                        context.read<TaskBloc>().add(
+                              TaskCreated(
+                                task: formData['task'],
+                                date: formattedDate,
+                                time: formattedTime,
+                              ),
+                            );
                       } else {
                         log.w("Validation failed");
                       }
@@ -164,4 +271,87 @@ class _CreateTaskPageState extends State<TaskPage> {
       ),
     );
   }
+}
+
+void _showNewMenuDialog(BuildContext context) {
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
+  DateTime? selectedDate;
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
+        title: const Text(
+          'Create New Menu',
+          style: TextStyle(
+            color: Color.fromARGB(201, 4, 83, 147),
+          ),
+        ),
+        content: FormBuilder(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FormBuilderTextField(
+                name: 'menuName',
+                decoration: const InputDecoration(hintText: 'Menu Name'),
+                validator: FormBuilderValidators.compose([
+                  FormBuilderValidators.required(),
+                  FormBuilderValidators.maxLength(50),
+                ]),
+              ),
+              FormBuilderTextField(
+                name: 'date',
+                readOnly: true,
+                decoration: const InputDecoration(hintText: 'Select Date'),
+                onTap: () async {
+                  selectedDate = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2101),
+                  );
+                  if (selectedDate != null) {
+                    _formKey.currentState?.fields['date']?.didChange(
+                      DateFormat('yyyy-MM-dd').format(selectedDate!),
+                    );
+                  }
+                },
+                validator: FormBuilderValidators.required(),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              if (_formKey.currentState?.saveAndValidate() ?? false) {
+                final formData = _formKey.currentState?.value;
+                final String menuName = formData?['menuName'];
+                final String date = formData?['date'];
+
+                context
+                    .read<MenuBloc>()
+                    .add(CreateMenu(menuname: menuName, date: date));
+                Navigator.of(context).pop();
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('Please fill in all fields'),
+                      duration: Duration(seconds: 3)),
+                );
+              }
+            },
+            child: const Text(
+              'Submit',
+              style: TextStyle(
+                color: Color.fromARGB(201, 4, 83, 147),
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
 }

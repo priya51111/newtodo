@@ -24,9 +24,6 @@ class TaskCreated extends TaskEvent {
 class FetchTask extends TaskEvent {
   final String userId;
   final String date;
-
- 
-
   FetchTask({
     required this.userId,
     required this.date,
@@ -57,4 +54,10 @@ class deleteTask extends TaskEvent {
 
   deleteTask({required this.taskId});
 }
+class TaskLongPressEvent extends TaskEvent {
+  final bool isSelected;
+
+  TaskLongPressEvent({required this.isSelected});
+}
+
 

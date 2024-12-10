@@ -13,7 +13,7 @@ final class MenuState extends Equatable {
   final MenuStatus status;
   final Map<String, dynamic>? menu;
   final String? message;
-  final List<Menu> menuList;
+  final List<Menu>menuList;
 
   static MenuState initial =
       const MenuState(status: MenuStatus.initial, message: '', menu: {},menuList:[]);

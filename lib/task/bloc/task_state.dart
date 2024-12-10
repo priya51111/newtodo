@@ -9,14 +9,18 @@ final class TaskState extends Equatable {
     this.task,
     this.taskList = const [],
     this.message = '',
-    this.tasks = false,
+    this.updatetask = false,
+    this.deleteTask = false,
+     this.isTaskSelected = false,
   });
 
   final TaskStatus status;
   final Map<String, dynamic>? task;
   final List<Task> taskList;
   final String? message;
-  final bool tasks;
+  final bool updatetask;
+  final bool deleteTask;
+  final bool isTaskSelected;
 
   static const TaskState initial = TaskState();
 
@@ -25,14 +29,18 @@ final class TaskState extends Equatable {
     List<Task>? taskList,
     String? message,
     Map<String, dynamic>? task,
-    bool? tasks, // Made nullable
+    bool? updatetask,
+    bool? deleteTask,
+   bool? isTaskSelected,
   }) {
     return TaskState(
       status: status ?? this.status,
       task: task ?? this.task,
       taskList: taskList ?? this.taskList,
       message: message ?? this.message,
-      tasks: tasks ?? this.tasks, // Fixed to use this.tasks
+      updatetask: updatetask ?? this.updatetask, 
+      deleteTask: deleteTask??this.deleteTask,
+       isTaskSelected: isTaskSelected ?? this.isTaskSelected,
     );
   }
 
@@ -42,6 +50,7 @@ final class TaskState extends Equatable {
         task,
         taskList,
         message,
-        tasks,
+        updatetask,
+        deleteTask
       ];
 }

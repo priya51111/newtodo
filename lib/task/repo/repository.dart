@@ -181,10 +181,5 @@ class TaskRepository {
   }
 }
 
-class SharedHelper {
-  static String? getTaskDate() {
-    final storage = GetStorage();
-    return storage.read('taskDate');
-  }
-}
+
 

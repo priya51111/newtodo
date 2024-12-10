@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:newtodo/bloc_observer.dart';
 
-import 'package:newtodo/menu/Homepage.dart';
+import 'package:newtodo/menu/home_page.dart';
 
 import 'package:newtodo/menu/bloc/menu_bloc.dart';
+import 'package:newtodo/menu/bloc/menu_event.dart';
 import 'package:newtodo/menu/repo/repositiry.dart';
+import 'package:newtodo/settings.dart';
 
 import 'package:newtodo/signin/bloc/signin_bloc.dart';
 import 'package:newtodo/signin/login_page.dart';
@@ -19,12 +22,16 @@ import 'package:newtodo/task/task_page.dart';
 import 'task/bloc/task_bloc.dart';
 import 'task/bloc/task_event.dart';
 
-void main() {
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await GetStorage.init(); // Initialize GetStorage
   Bloc.observer = const AppBlocObserver();
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  final box = GetStorage();
   final GoRouter _router = GoRouter(
     initialLocation: '/signin',  
     routes: [
@@ -53,6 +60,10 @@ class MyApp extends StatelessWidget {
         path: '/taskpage',
         builder: (context, state) => TaskPage(),
       ),
+         GoRoute(
+        path: '/setting',
+        builder: (context, state) => settings(),
+      ),
     ],
   );
   MyApp({super.key});
@@ -66,10 +77,14 @@ class MyApp extends StatelessWidget {
           create: (context) => SigninBloc(SigninRepository: SigninRepository()),
         ),
         BlocProvider(
-            create: (_) => MenuBloc(menuRepository: MenuRepository())
+            create: (_) => MenuBloc(menuRepository: MenuRepository())..add(FetchMenu( userId: box.read('userId') ,
+      date: box.read('menuDate') ,))
               ),
                       BlocProvider(
-            create: (_) => TaskBloc(taskRepository: TaskRepository())
+            create: (_) => TaskBloc(taskRepository: TaskRepository())..add(FetchTask(
+      userId: box.read('userId') ,
+      date: box.read('taskDate') ,
+    )),
               ),
  
  

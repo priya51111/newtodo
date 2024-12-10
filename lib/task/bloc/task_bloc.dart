@@ -1,6 +1,7 @@
 
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:logger/logger.dart';
 
 import 'package:newtodo/task/bloc/task_event.dart';
@@ -16,12 +17,13 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     on<TaskCreated>(_onCreateTask);
     on<FetchTask>(_onFetchTask);
     on<UpdateTask>(_onUpdateTask);
-    on<deleteTask>(_deleteUser); 
+    on<deleteTask>(_deleteTask); 
+     on<TaskLongPressEvent>(_onTaskLongPress);
   }
 
   final TaskRepository _taskRepository;
   final Logger logger = Logger();
-
+     final box = GetStorage();
   Future<void> _onCreateTask(
     TaskCreated event,
     Emitter<TaskState> emit,
@@ -38,6 +40,17 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
         status: TaskStatus.success,
         task: taskCreate,
       ));
+        final userId = box.read('userId');
+      final date = box.read('taskDate');
+      if (userId == null || date == null) {
+        emit(state.copyWith(
+          status: TaskStatus.error,
+          message: "date or userId is missied"
+        ));
+        
+      }
+ 
+      add(FetchTask   (userId: userId, date: date));
     } catch (error) {
       logger.e("Error creating task: $error");
       emit(
@@ -66,6 +79,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
           message: error.toString(),
         ),
       );
+       add(FetchTask(userId: event.userId, date: event.date));
     }
   }
 
@@ -79,7 +93,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
           time: event.time,
           menuId: event.menuId,
           isFinished: event.isfinished);
-      emit(state.copyWith(tasks: updatedTask));
+      emit(state.copyWith(updatetask: updatedTask));
     } catch (error) {
       logger.e("Error creating task: $error");
       emit(
@@ -91,14 +105,14 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     }
   }
 
-  Future<void> _deleteUser(
+  Future<void> _deleteTask(
     deleteTask event,
     Emitter<TaskState> emit,
   ) async {
     try {
       emit(state.copyWith(status: TaskStatus.loading));
       final deleteTask = await _taskRepository.deleteTask(event.taskId);
-      emit(state.copyWith(tasks: deleteTask));
+      emit(state.copyWith(deleteTask: deleteTask));
     } catch (error) {
       logger.e("Error creating task: $error");
       emit(
@@ -108,6 +122,9 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
         ),
       );
     }
+  }
+   void _onTaskLongPress(TaskLongPressEvent event, Emitter<TaskState> emit) {
+    emit(state.copyWith(isTaskSelected: event.isSelected));
   }
 }
 
