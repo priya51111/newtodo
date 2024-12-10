@@ -85,6 +85,13 @@ class SigninRepository {
       throw Exception('Failed to sign in');
     }
   }
+    Future<void> logOut() async {
+    final prefs = await SharedPreferences.getInstance();
 
+    await prefs.remove('userId');
+    await prefs.remove('token');
+
+    logger.i("User logged out successfully. UserId and Token removed.");
+  }
 
 }
