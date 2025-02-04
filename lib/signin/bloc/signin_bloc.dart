@@ -49,7 +49,7 @@ class SigninBloc extends Bloc<SigninEvent, SigninState> {
     }
   }
 
-  Future<void> _onLoginUser(
+  Future<void> _onLoginUser( 
     LoginUser event,
     Emitter<SigninState> emit,
   ) async {
@@ -58,7 +58,7 @@ class SigninBloc extends Bloc<SigninEvent, SigninState> {
       final login = await _signinRepository.logIn(event.email, event.password);
       logger.d("Login ::: _onCreateUser:: $login");
       emit(state.copyWith(
-        status: SigninStatus.loaded,
+        status: SigninStatus.loggedIn,
         user: login,
         
       ));

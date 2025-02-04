@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:newtodo/bloc_observer.dart';
+import 'package:newtodo/landing_page.dart';
 
 import 'package:newtodo/menu/home_page.dart';
 
@@ -22,7 +23,6 @@ import 'package:newtodo/task/task_page.dart';
 import 'task/bloc/task_bloc.dart';
 import 'task/bloc/task_event.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init(); // Initialize GetStorage
@@ -33,21 +33,20 @@ void main() async {
 class MyApp extends StatelessWidget {
   final box = GetStorage();
   final GoRouter _router = GoRouter(
-    initialLocation: '/signin',  
+    initialLocation: '/LandingPage',
     routes: [
+       GoRoute(
+      path: '/LandingPage',
+      builder: (context, state) => LandingPage(),
+    ),
       GoRoute(
         path: '/signin',
-
         builder: (context, state) => SigninPage(),
       ),
       GoRoute(
         path: '/home',
-        builder: (context, state) => const  Homepage(),
-
-      
-
+        builder: (context, state) => const Homepage(),
       ),
-      
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginPage(),
@@ -56,11 +55,11 @@ class MyApp extends StatelessWidget {
         path: '/logout',
         builder: (context, state) => LogoutPage(),
       ),
-       GoRoute(
+      GoRoute(
         path: '/taskpage',
         builder: (context, state) => TaskPage(),
       ),
-         GoRoute(
+      GoRoute(
         path: '/setting',
         builder: (context, state) => settings(),
       ),
@@ -70,38 +69,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
- 
-    return MultiBlocProvider(
-      providers:[     
-        BlocProvider(
-          create: (context) => SigninBloc(SigninRepository: SigninRepository()),
-        ),
-        BlocProvider(
-            create: (_) => MenuBloc(menuRepository: MenuRepository())..add(FetchMenu( userId: box.read('userId') ,
-      date: box.read('menuDate') ,))
-              ),
-                      BlocProvider(
-            create: (_) => TaskBloc(taskRepository: TaskRepository())..add(FetchTask(
-      userId: box.read('userId') ,
-      date: box.read('taskDate') ,
-    )),
-              ),
- 
- 
-
-
-      ],
-      child: MaterialApp.router(
-        routerConfig: _router,
-       
+    return
+    MaterialApp.router(
+      routerConfig: _router,
+      
       theme: ThemeData(
-        
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
-
       ),
-      )
     );
-    
   }
 }
