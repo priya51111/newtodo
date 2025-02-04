@@ -11,5 +11,5 @@ class FetchMenu extends MenuEvent {
   final String userId;
   final String date;
 
-  FetchMenu({required this.userId, required this.date});
+  FetchMenu(this.userId,  this.date);
 }

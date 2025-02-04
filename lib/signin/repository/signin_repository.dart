@@ -28,7 +28,7 @@ class SigninRepository {
         }),
       );
 
-      logger.i("API Response: ${response.statusCode} - ${response.body}");
+      logger.i("SigninRepository ::: signIn:: $response");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseBody = json.decode(response.body);
@@ -65,8 +65,8 @@ class SigninRepository {
       }),
     );
 
-    logger.i("Response Status Code: ${response.statusCode}");
-    logger.i("Response Body: ${response.body}");
+    logger.i("SigninRepository :::logIn:: $response");
+    
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);

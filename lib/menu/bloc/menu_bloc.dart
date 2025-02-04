@@ -37,15 +37,15 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
         final userId = box.read('userId');
       final date = box.read('menuDate');
 
-      if (userId == null || date == null) {
-        emit(state.copyWith(
-          status: MenuStatus.error,
-          message: "date or userId is missied"
-        ));
-        
-      }
+     if (userId != null && date != null) {
  
-      add(FetchMenu(userId: userId, date: date));
+} else {
+  emit(state.copyWith(
+    status: MenuStatus.error,
+    message: "Date or userId is missing",
+  ));
+}
+
        
       
     } catch (error) {
@@ -79,7 +79,7 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
           message: error.toString(),
         ),
       );
-      add(FetchMenu(userId: event.userId, date: event.date));
+     
     }
   }
 }

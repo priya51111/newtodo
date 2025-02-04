@@ -30,6 +30,7 @@ dependencies:
   fluttertoast: ^8.2.8
   flutter_form_builder: ^9.5.0
   form_builder_validators: ^11.0.0
+  android_intent_plus: ^5.2.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

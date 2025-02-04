@@ -18,7 +18,7 @@ class MenuRepository {
     "Default",
     "Personal",
     "Work"
-  ];
+  ]; 
 
   Future<Map<String, dynamic>> createMenu(String menuname, String date) async {
     try {
@@ -38,7 +38,7 @@ class MenuRepository {
         }),
       );
 
-      logger.i("API Response: ${response.statusCode} - ${response.body}");
+      logger.i("MenuRepository ::: _createMenu:: $response ");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
@@ -77,7 +77,7 @@ class MenuRepository {
         },
       );
 
-      logger.i("API Response: ${response.statusCode} - ${response.body}");
+      logger.i("MenuRepository ::: fetchMenus:: $response");
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

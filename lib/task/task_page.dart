@@ -3,15 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
-import 'package:newtodo/menu/bloc/menu_state.dart';
 import '../../task/bloc/task_bloc.dart';
 import '../../task/bloc/task_event.dart';
 import '../../task/bloc/task_state.dart';
 import '../menu/bloc/menu_bloc.dart';
 import '../menu/bloc/menu_event.dart';
+import '../widgets/dropdown_menu.dart';
 
 class TaskPage extends StatefulWidget {
   const TaskPage({Key? key}) : super(key: key);
@@ -35,30 +36,31 @@ class _CreateTaskPageState extends State<TaskPage> {
           style: const TextStyle(color: Colors.white),
         ),
       ),
-      body: BlocListener<TaskBloc, TaskState>(
-        listener: (context, state) {
-          if (state.status == TaskStatus.loading) {
-            const Center(
-              child: CircularProgressIndicator(color: Colors.white),
-            );
-          } else if (state.status == TaskStatus.success) {
-            Fluttertoast.showToast(
-              msg: "Task Created Successfully!",
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.BOTTOM,
-              backgroundColor: Colors.green,
-              textColor: Colors.white,
-            );
-            Future.delayed(const Duration(seconds: 1), () {
-              context.go('/home'); // Replace '/home' with your home page route
-            });
-          } else if (state.status == TaskStatus.error) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Task Creation Failed: ${state.message}')),
-            );
-          }
-        },
-        child: Padding(
+      body: BlocListener<TaskBloc, TaskState>(listener: (context, state) {
+        if (state.status == TaskStatus.loading) {
+          const Center(
+            child: CircularProgressIndicator(color: Colors.white),
+          );
+        } else if (state.status == TaskStatus.success) {
+          Fluttertoast.showToast(
+            msg: state.isEditMode
+                ? "Task Updated Successfully!"
+                : "Task Created Successfully!",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.green,
+            textColor: Colors.white,
+          );
+          Future.delayed(const Duration(seconds: 1), () {
+            context.go('/home');
+          });
+        } else if (state.status == TaskStatus.error) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Task Creation Failed: ${state.message}')),
+          );
+        } 
+      }, child: BlocBuilder<TaskBloc, TaskState>(builder: (context, state) {
+        return Padding(
           padding: const EdgeInsets.all(16.0),
           child: FormBuilder(
             key: _formKey,
@@ -76,7 +78,10 @@ class _CreateTaskPageState extends State<TaskPage> {
                 const SizedBox(height: 16),
                 FormBuilderTextField(
                   name: 'task',
+                 
                   style: const TextStyle(color: Colors.white),
+               
+
                   decoration: const InputDecoration(
                     hintText: "Enter Task here",
                     hintStyle: TextStyle(color: Colors.white),
@@ -100,6 +105,7 @@ class _CreateTaskPageState extends State<TaskPage> {
                 const SizedBox(height: 16),
                 FormBuilderDateTimePicker(
                   name: 'date',
+                
                   style: const TextStyle(color: Colors.white),
                   initialDate: DateTime.now(),
                   inputType: InputType.date,
@@ -117,8 +123,9 @@ class _CreateTaskPageState extends State<TaskPage> {
                   validator: FormBuilderValidators.required(),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                const Text( 
                   "Time",
+                   
                   style: TextStyle(
                     color: Color.fromARGB(135, 33, 149, 243),
                     fontWeight: FontWeight.bold,
@@ -160,115 +167,66 @@ class _CreateTaskPageState extends State<TaskPage> {
                   children: [
                     const SizedBox(width: 8),
                     Expanded(
-                      child: BlocBuilder<MenuBloc, MenuState>(
-                        builder: (context, state) {
-                          if (state.status == MenuStatus.loading) {
-                            return const Center(
-                              child: CircularProgressIndicator(
-                                  color: Colors.white),
-                            );
-                          }
-
-                          if (state.status == MenuStatus.error) {
-                            return const Center(
-                              child: Text(
-                                'Error loading menus',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            );
-                          }
-
-                          final menuItems = [
-                            'New List',
-                            ...state.menuList
-                                .map((menu) => menu.menuname)
-                                .toList(),
-                            'Finished',
-                          ];
-
-                          dropdownValue ??= menuItems.first;
-
-                          return LayoutBuilder(
-                            builder: (context, constraints) {
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 15),
-                                child: SizedBox(
-                                  width: 160.0,
-                                  height: 60.0,
-                                  child: DropdownButton<String>(
-                                    value: dropdownValue,
-                                    hint: const Text('Select'),
-                                    items: menuItems.map((String item) {
-                                      return DropdownMenuItem<String>(
-                                        value: item,
-                                        child: Text(
-                                          item,
-                                          style: const TextStyle(
-                                              color: Colors.white),
-                                        ),
-                                      );
-                                    }).toList(),
-                                    onChanged: (String? value) {
-                                      if (value == 'New List') {
-                                        _showNewMenuDialog(context);
-                                      }
-                                    },
-                                    dropdownColor:
-                                        const Color.fromARGB(135, 33, 149, 243),
-                                    iconEnabledColor: Colors.white,
-                                    isExpanded: true,
-                                    underline: const SizedBox(),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
+                      child: DropdownMenuWidget(),
                     ),
                     IconButton(
-                        onPressed: () {
-                          _showNewMenuDialog(context);
-                        },
-                        icon: const Icon(Icons.format_list_bulleted_add,
-                            color: Colors.white),   )
+                      onPressed: () {
+                        _showNewMenuDialog(context);
+                      },
+                      icon: const Icon(Icons.format_list_bulleted_add,
+                          color: Colors.white),
+                    )
                   ],
                 ),
                 const SizedBox(height: 24),
-                Center(
-                  child: FloatingActionButton(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30)),
-                    onPressed: () {
-                      if (_formKey.currentState?.saveAndValidate() ?? false) {
-                        final formData = _formKey.currentState!.value;
-                        final DateTime parsedDate = formData['date'];
-                        final DateTime parsedTime = formData['time'];
-                        final formattedDate =
-                            DateFormat('yyyy-MM-dd').format(parsedDate);
-                        final formattedTime =
-                            DateFormat('HH:mm:ss').format(parsedTime);
+                FloatingActionButton(
+  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+  onPressed: () {
+    if (_formKey.currentState?.saveAndValidate() ?? false) {
+      final formData = _formKey.currentState!.value;
+      final DateTime parsedDate = formData['date'];
+      final DateTime parsedTime = formData['time'];
+      final formattedDate = DateFormat('yyyy-MM-dd').format(parsedDate);
+      final formattedTime = DateFormat('HH:mm:ss').format(parsedTime);
 
-                        context.read<TaskBloc>().add(
-                              TaskCreated(
-                                task: formData['task'],
-                                date: formattedDate,
-                                time: formattedTime,
-                              ),
-                            );
-                      } else {
-                        log.w("Validation failed");
-                      }
-                    },
-                    backgroundColor: Colors.white,
-                    child: const Icon(Icons.check),
-                  ),
-                ),
+      final box = GetStorage();
+      final taskId = box.read('taskId');  // Ensure taskId is retrieved correctly
+      final menuId = box.read('menuId');
+
+      if (state.isEditMode) {
+        context.read<TaskBloc>().add(
+          UpdateTask(
+            taskId: taskId,
+            task: formData['task'],
+            date: formattedDate,
+            time: formattedTime,
+            menuId: menuId,
+            isfinished: formData['finished'] ?? false,
+            isEditMode: true,
+          ),
+        );
+      } else {
+        context.read<TaskBloc>().add(
+          TaskCreated(
+            task: formData['task'],
+            date: formattedDate,
+            time: formattedTime,
+          ),
+        );
+      }
+    } else {
+      log.w("Validation failed");
+    }
+  },
+  backgroundColor: Colors.white,
+  child: const Icon(Icons.check),
+),
+
               ],
             ),
           ),
-        ),
-      ),
+        );
+      })),
     );
   }
 }
