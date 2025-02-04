@@ -7,6 +7,7 @@ import 'package:newtodo/signin/bloc/signin_bloc.dart';
 import 'package:newtodo/signin/bloc/signin_event.dart';
 import 'package:newtodo/signin/bloc/signin_state.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:newtodo/signin/repository/signin_repository.dart';
 
 class SigninPage extends StatelessWidget {
   const SigninPage({super.key});
@@ -17,35 +18,8 @@ class SigninPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A345B),
-      body: BlocListener<SigninBloc, SigninState>(
-        listener: (context, state) {
-          if (state.status == SigninStatus.error) {
-            Fluttertoast.showToast(
-              msg: state.message ?? "Error occurred",
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.BOTTOM,
-              backgroundColor: Colors.red,
-              textColor: Colors.white,
-            );
-          } else if (state.status == SigninStatus.loaded) {
-            Fluttertoast.showToast(
-              msg: 'User created successfully',
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.BOTTOM,
-              backgroundColor: Colors.green,
-              textColor: Colors.white,
-            );
-            GoRouter.of(context).go('/home');
-          } else if (state.status == SigninStatus.loading) {
-            Container(
-              color: Colors.black.withOpacity(0.5),
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
-          }
-        },
-        child: FormBuilder(
+      body:
+      FormBuilder(
           key: _formKey,
           child: Stack(
             alignment: Alignment.topLeft,
@@ -230,7 +204,7 @@ class SigninPage extends StatelessWidget {
             ],
           ),
         ),
-      ),
+      
     );
   }
 }

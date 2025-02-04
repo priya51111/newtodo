@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:newtodo/bloc_observer.dart';
+import 'package:newtodo/landing_page.dart';
 
 import 'package:newtodo/menu/home_page.dart';
 
@@ -24,9 +25,6 @@ import 'package:newtodo/task/task_page.dart';
 import 'task/bloc/task_bloc.dart';
 import 'task/bloc/task_event.dart';
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,15 +61,22 @@ void main() async {
 class MyApp extends StatelessWidget {
   final box = GetStorage();
   final GoRouter _router = GoRouter(
-    initialLocation: '/signin',
+    initialLocation: '/signin',  
     routes: [
+       GoRoute(
+      path: '/LandingPage',
+      builder: (context, state) => LandingPage(),
+    ),
       GoRoute(
         path: '/signin',
         builder: (context, state) => SigninPage(),
       ),
       GoRoute(
         path: '/home',
-        builder: (context, state) => HomePage(),
+        builder: (context, state) => const  Homepage(),
+
+      
+
       ),
       GoRoute(
         path: '/login',
@@ -97,33 +102,35 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+ 
     return MultiBlocProvider(
-      providers: [
+      providers:[     
         BlocProvider(
           create: (context) => SigninBloc(SigninRepository: SigninRepository()),
         ),
-       
         BlocProvider(
-          create: (_) {
-            final userId = box.read('userId');
-            final taskDate = box.read('taskDate');
-            if (userId == null || taskDate == null) {
-              return TaskBloc(taskRepository: TaskRepository());
-            }
-            return TaskBloc(taskRepository: TaskRepository())
-              ..add(FetchTask(
-                userId: userId,
-                date: taskDate,
-              ));
-          },
-        ),
+            create: (_) => MenuBloc(menuRepository: MenuRepository())..add(FetchMenu( userId: box.read('userId') ,
+      date: box.read('menuDate') ,))
+              ),
+                      BlocProvider(
+            create: (_) => TaskBloc(taskRepository: TaskRepository())..add(FetchTask(
+      userId: box.read('userId') ,
+      date: box.read('taskDate') ,
+    )),
+              ),
+ 
+ 
+
+
       ],
       child: MaterialApp.router(
         routerConfig: _router,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-          useMaterial3: true,
-        ),
+       
+      theme: ThemeData(
+        
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
+
       ),
     );
   }
